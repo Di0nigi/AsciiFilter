@@ -3,9 +3,9 @@ from PIL import Image,ImageFont,ImageDraw
 import cv2
 
 
-#chars= ' .\'`^",:;Il!i><~+_-?][}{\\1)(|\\/*#MW&8%B@$'
-chars= ' .\'`^",:;Il!i><¬~+_-?][}{\\1234567890)(|\\/*#MW&8%B@$£'
-#chars= ' .\'`^",:;Il!i><~+_-?][}{\\1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$'
+#chars = ' .\'`^",:;Il!i><~+_-?][}{\\1)(|\\/*#MW&8%B@$'
+chars = ' .\'`^",:;Il!i><¬~+_-?][}{\\1234567890)(|\\/*#MW&8%B@$£'
+#chars = ' .\'`^",:;Il!i><~+_-?][}{\\1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$'
 
 def pixelTochar(l):
     charL=[]
@@ -37,12 +37,11 @@ def determineSize(font, rowSpace,lettSpace,numChar,numLines,text):
 
     return (height,width,3)
 
-def drawText(img,charList,font,color):
+def drawText(img,charList,font,color,spacingDims):
 
     #font = ImageFont.truetype("D:\dionigi\Documents\Python scripts\AsciiFilter\\assets\\fonts\COURE.FON", size)
 
-    
-    
+
     draw = ImageDraw.Draw(img)
     
     #draw.text(position, text, font=font, fill=color)
@@ -57,10 +56,10 @@ def drawText(img,charList,font,color):
         for c in char:
 
             draw.text((x,y), c, font=font, fill=tuple(color[ind][i]))
-            x+=3
+            x+=spacingDims[0]
             i+=1
 
-        y+=6
+        y+=spacingDims[1]
 
     
     image = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
@@ -78,17 +77,30 @@ def toTextFile(fileName,charlist):
 
 ### FILTERS
 
-def applyBasic(img):
+def applyBasic(img,color):
 
-    font = ImageFont.truetype("arial.ttf", 5)
+    fontSz= 75
+    font = ImageFont.truetype("arial.ttf", fontSz)
 
     chars,cols = pixelTochar(img)
 
+    dim1=(fontSz//2)+1
+    dim2=fontSz+1
+
+    #print((dim1,dim2))
+
+  
+
     cols = np.clip(np.array(cols)+255,a_min=0,a_max=255)
+
     cols=cols.tolist()
+
+    sz = determineSize(font=font,rowSpace=dim2,lettSpace=dim1,numChar=len(chars[0]),numLines=len(chars),text=chars[0][0])
+
+    
     #print(cols)
 
-    sz = determineSize(font=font,rowSpace=6,lettSpace=3,numChar=len(chars[0]),numLines=len(chars),text=chars[0][0])
+   #sz = determineSize(font=font,rowSpace=6,lettSpace=3,numChar=len(chars[0]),numLines=len(chars),text=chars[0][0])
 
     canvas = np.zeros(shape=sz,dtype=np.uint8)
     
@@ -96,7 +108,7 @@ def applyBasic(img):
 
     canvas = Image.fromarray(canvas)
 
-    ret = drawText(img=canvas,charList=chars,font=font,color=cols)
+    ret = drawText(img=canvas,charList=chars,font=font,color=cols,spacingDims=(dim1,dim2))
     #ret = toTextFile("prova.txt",chars)
 
     ret = Image.fromarray(ret)
@@ -104,11 +116,16 @@ def applyBasic(img):
     return ret
 
 def basicColor(img):
-    font = ImageFont.truetype("arial.ttf", 5)
+    fontSz= 50
+    font = ImageFont.truetype("arial.ttf", fontSz)
 
     chars,cols = pixelTochar(img)
 
-    sz = determineSize(font=font,rowSpace=6,lettSpace=3,numChar=len(chars[0]),numLines=len(chars),text=chars[0][0])
+    print((fontSz//2)+1)
+    print(fontSz+1)
+
+    sz = determineSize(font=font,rowSpace=fontSz+1,lettSpace=(fontSz//2)+1,numChar=len(chars[0]),numLines=len(chars),text=chars[0][0])
+
 
     canvas = np.zeros(shape=sz,dtype=np.uint8)
     
@@ -129,7 +146,7 @@ def preprocess(img,dwnSamp):
 
     newSize = (width //dwnSamp , height // dwnSamp)
 
-    print(newSize)
+    #print(newSize)
 
     img = img.resize(newSize, Image.Resampling.LANCZOS)
 
@@ -140,18 +157,20 @@ def preprocess(img,dwnSamp):
 
 
 def main():
-    #imgTitle = "D:\dionigi\Desktop\\x100 prov\edchives\\templateinstahg35.jpg"
-    #img = Image.open(imgTitle)
+    imgTitle = "D:\dionigi\Desktop\\x100 prov\edchives\\templateinstahg35.jpg"
+    img = Image.open(imgTitle)
+
+    img = preprocess(img,10)
     
 
     #img.show()
 
-   # img= np.array(img)
-   # out = applyBasic(img)
+    #img= np.array(img)
+    out = applyBasic(img)
 
-    #out.show()
+    out.show()
     #out.save("prova.png")
 
     return "done"
 
-#print(main())
+print(main())
