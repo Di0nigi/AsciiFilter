@@ -122,14 +122,10 @@ def basicColor(img):
     ret = Image.fromarray(ret)
     return ret
 
+def preprocess(img,dwnSamp):
 
-
-def main():
-    imgTitle = "D:\dionigi\Desktop\\x100 prov\edchives\\templateinstahg35.jpg"
-    img = Image.open(imgTitle)
     width, height = img.size
 
-    dwnSamp=2
 
     newSize = (width //dwnSamp , height // dwnSamp)
 
@@ -137,13 +133,24 @@ def main():
 
     img = img.resize(newSize, Image.Resampling.LANCZOS)
 
+    img= np.array(img)
+
+    return img
+
+
+
+def main():
+    #imgTitle = "D:\dionigi\Desktop\\x100 prov\edchives\\templateinstahg35.jpg"
+    #img = Image.open(imgTitle)
+    
+
     #img.show()
 
-    img= np.array(img)
-    out = applyBasic(img)
+   # img= np.array(img)
+   # out = applyBasic(img)
 
-    out.show()
-    out.save("prova.png")
+    #out.show()
+    #out.save("prova.png")
 
     return "done"
 

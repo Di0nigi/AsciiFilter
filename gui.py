@@ -58,6 +58,9 @@ class App:
 
         self.fileBt=tk.Button(self.sideSetting, text="Apply", command=self.applyFilter,width=28)
         self.fileBt.place(x=0,y=225)
+
+        self.fileBt=tk.Button(self.sideSetting, text="Save", command=self.saveFile,width=28)
+        self.fileBt.place(x=0,y=245)
         return
     
     def onChange(self,value):
@@ -65,7 +68,23 @@ class App:
 
         print("You chose:", value)
 
+    def saveFile(self):
+        if self.currentImage:
+            self.currentImage.save(f"out\\{self.fileName}_Ascii.png")
+
+
+        return
+
     def applyFilter(self):
+        if self.currentImage:
+            im=f.preprocess(self.currentImage,dwnSamp=int(self.dwnSampleField.get()))
+            if self.toApply == "Basic Ascii":
+                out = f.applyBasic(im)
+            elif self.toApply=="Color Ascii":
+                out = f.basicColor(im)
+            self.currentImage=out
+            self.displayPrev()
+            
         return
 
     def imagePanel(self):
@@ -81,26 +100,23 @@ class App:
         
     )
         self.nameFile.config(text=self.currentFile.split("/")[-1])
+
+        self.fileName= self.currentFile.split("/")[-1]
         print(self.currentFile)
 
         self.currentImage = Image.open(self.currentFile)
 
-        displayable = self.convertToSize(np.array(self.currentImage))
+        self.displayPrev()
 
-        self.imTkImage = ImageTk.PhotoImage(Image.fromarray(displayable))
-        self.imDisplayer.config(image=self.imTkImage)
-        self.imDisplayer.image = self.imTkImage
+       
         return
+
+    
     def onSelect(self,value):
         
 
         return
    
-        ''' def convertToSize(self,im):
-        w=self.imDisplayer.winfo_width()-1
-        resized=resize(im,(computeRatio(w,1/1),w,3))
-
-        return resized'''
     def convertToSize(self,im):
    
         w = self.imDisplayer.winfo_height() - 1
@@ -131,6 +147,15 @@ class App:
         #   dim2= ratio * dim
         #print(dim2)
         return dim2
+    
+    def displayPrev(self):
+        if self.currentImage:
+            displayable = self.convertToSize(np.array(self.currentImage))
+
+            self.imTkImage = ImageTk.PhotoImage(Image.fromarray(displayable))
+            self.imDisplayer.config(image=self.imTkImage)
+            self.imDisplayer.image = self.imTkImage
+        return
 
 
 
