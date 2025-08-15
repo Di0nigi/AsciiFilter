@@ -21,11 +21,21 @@ def pixelTochar(l):
     
     return charL
 
-def drawText(img,charList,size,color):
+def determineSize(font, rowSpace,lettSpace,numChar,numLines,text):
+    charW = font.getbbox(text)[0]
+    charH = font.getbbox(text)[1]
+    rowSpace = rowSpace-charH
+    width  = (charW + lettSpace) * numChar - lettSpace
+    height = (charH + rowSpace) * numLines - rowSpace
+
+
+    return (height,width,3)
+
+def drawText(img,charList,font,color):
 
     #font = ImageFont.truetype("D:\dionigi\Documents\Python scripts\AsciiFilter\\assets\\fonts\COURE.FON", size)
 
-    font = ImageFont.truetype("arial.ttf", size)
+    
     
     draw = ImageDraw.Draw(img)
     
@@ -58,24 +68,25 @@ def toTextFile(fileName,charlist):
 
 
 
-def applyBasic(img,sz=(2000,2000,3)):
+def applyBasic(img):
 
     
 
-    if not sz:
-        sz = img.shape
-
-    canvas = np.zeros(shape=sz,dtype=np.uint8)
     
 
-    #img = np.mean(img,axis=2)
+    font = ImageFont.truetype("arial.ttf", 5)
 
     chars = pixelTochar(img)
 
+    sz = determineSize(font=font,rowSpace=6,lettSpace=3,numChar=len(chars[0]),numLines=len(chars),text=chars[0][0])
+
+    canvas = np.zeros(shape=sz,dtype=np.uint8)
+    
+    #img = np.mean(img,axis=2)
 
     canvas = Image.fromarray(canvas)
 
-    ret = drawText(img=canvas,charList=chars,size=5,color=(255,255,255))
+    ret = drawText(img=canvas,charList=chars,font=font,color=(255,255,255))
     #ret = toTextFile("prova.txt",chars)
 
     ret = Image.fromarray(ret)
