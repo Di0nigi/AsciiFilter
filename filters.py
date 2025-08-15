@@ -62,8 +62,9 @@ def drawText(img,charList,font,color,spacingDims):
         y+=spacingDims[1]
 
     
-    image = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-    
+    #image = cv2.cvtColor(np.array(img), cv2.COLOR_RGB)
+    image = np.array(img)
+
     return image
 
 def toTextFile(fileName,charlist):
@@ -77,9 +78,9 @@ def toTextFile(fileName,charlist):
 
 ### FILTERS
 
-def applyBasic(img,color):
+def applyBasic(img,bg,fg):
 
-    fontSz= 75
+    fontSz= 5
     font = ImageFont.truetype("arial.ttf", fontSz)
 
     chars,cols = pixelTochar(img)
@@ -91,18 +92,22 @@ def applyBasic(img,color):
 
   
 
-    cols = np.clip(np.array(cols)+255,a_min=0,a_max=255)
+    cols = np.zeros_like(cols)
+    cols=np.clip(np.array(cols)+fg,a_min=0,a_max=255)
+
 
     cols=cols.tolist()
 
     sz = determineSize(font=font,rowSpace=dim2,lettSpace=dim1,numChar=len(chars[0]),numLines=len(chars),text=chars[0][0])
 
     
-    #print(cols)
+    print(sz)
 
    #sz = determineSize(font=font,rowSpace=6,lettSpace=3,numChar=len(chars[0]),numLines=len(chars),text=chars[0][0])
 
     canvas = np.zeros(shape=sz,dtype=np.uint8)
+    canvas = np.clip(canvas+bg,a_min=0,a_max=255)
+    canvas= canvas.astype(np.uint8)
     
     #img = np.mean(img,axis=2)
 
@@ -115,25 +120,29 @@ def applyBasic(img,color):
 
     return ret
 
-def basicColor(img):
-    fontSz= 50
+def basicColor(img,bg):
+    fontSz= 5
     font = ImageFont.truetype("arial.ttf", fontSz)
 
     chars,cols = pixelTochar(img)
 
-    print((fontSz//2)+1)
-    print(fontSz+1)
+    dim1=(fontSz//2)+1
+    dim2=fontSz+1
 
-    sz = determineSize(font=font,rowSpace=fontSz+1,lettSpace=(fontSz//2)+1,numChar=len(chars[0]),numLines=len(chars),text=chars[0][0])
+    
+
+    sz = determineSize(font=font,rowSpace=dim2,lettSpace=dim1,numChar=len(chars[0]),numLines=len(chars),text=chars[0][0])
 
 
     canvas = np.zeros(shape=sz,dtype=np.uint8)
+    canvas = np.clip(canvas+bg,a_min=0,a_max=255)
+    canvas= canvas.astype(np.uint8)
     
     #img = np.mean(img,axis=2)
 
     canvas = Image.fromarray(canvas)
 
-    ret = drawText(img=canvas,charList=chars,font=font,color=cols)
+    ret = drawText(img=canvas,charList=chars,font=font,color=cols,spacingDims=(dim1,dim2))
     #ret = toTextFile("prova.txt",chars)
 
     ret = Image.fromarray(ret)
@@ -165,12 +174,13 @@ def main():
 
     #img.show()
 
-    #img= np.array(img)
-    out = applyBasic(img)
+    #img= np.array(img)0
+    out = applyBasic(img,bg=(0,0,50),fg=(255,0,0))
+    #out = basicColor(img,bg=(100,100,100))
 
     out.show()
-    #out.save("prova.png")
+    out.save("prova.png")
 
     return "done"
 
-print(main())
+#print(main())
