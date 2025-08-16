@@ -1,6 +1,6 @@
 import tkinter as tk
 import numpy as np
-from tkinter import filedialog
+from tkinter import filedialog, colorchooser
 from PIL import Image, ImageTk
 from scipy.ndimage import zoom
 
@@ -11,6 +11,9 @@ class App:
     def __init__(self,r):
 
         self.filters = ["Basic Ascii", "Color Ascii"]
+        self.bckg=(0,0,0)
+        self.fgC=(255,255,255)
+        self.fontSize=5
         self.toApply=self.filters[0]
         self.currentFile=""
         self.currentImage = None
@@ -38,6 +41,8 @@ class App:
     
     def sidePanel(self):
 
+        
+
         self.nameFile = tk.Label(text=self.fileName, font=("TkDefaultFont",10),width=25,anchor="w")
         self.nameFile.place(x=0,y=0)
 
@@ -54,6 +59,7 @@ class App:
         self.fontSizeLabel.place(x=0,y=105)
 
         self.fontSizeField=tk.Entry(self.sideSetting,width=33)
+        self.fontSizeField.insert(0, "5")
         self.fontSizeField.place(x=0,y=125)
 
         self.filtersLabel = tk.Label(text="Pick effect", font=("TkDefaultFont",10),width=25,anchor="w")
@@ -63,13 +69,46 @@ class App:
         dropdown = tk.OptionMenu(self.sideSetting, var, *self.filters, command=self.onChange)
         dropdown.place(x=0,y=200)
 
+        self.colorBtn1 = tk.Button(self.sideSetting, text="Background color", command=self.pickColorBkg)
+        self.colorBtn1.place(x=0,y=225)
+
+        self.colorLabel1 = tk.Label(self.sideSetting,  width=20, height=2)
+        self.colorLabel1.config(bg="#000000")
+        self.colorLabel1.place(x=0,y=250)
+
+        self.colorBtn2 = tk.Button(self.sideSetting, text="Foreground color", command=self.pickColorFg)
+        self.colorBtn2.place(x=0,y=275)
+
+        self.colorLabel2 = tk.Label(self.sideSetting, width=20, height=2)
+        self.colorLabel2.config(bg="#FFFFFF")
+        self.colorLabel2.place(x=0,y=300)
+
         self.fileBt=tk.Button(self.sideSetting, text="Apply", command=self.applyFilter,width=28)
-        self.fileBt.place(x=0,y=225)
+        self.fileBt.place(x=0,y=330)
 
         self.fileBt=tk.Button(self.sideSetting, text="Save", command=self.saveFile,width=28)
-        self.fileBt.place(x=0,y=245)
+        self.fileBt.place(x=0,y=350)
 
         return
+    
+    def pickColorBkg(self):
+        
+        colorCode = colorchooser.askcolor(title="Choose a color")
+        # color_code is a tuple: ((R, G, B), "#rrggbb")
+        if colorCode[1]:  # if user didn’t cancel
+            
+            self.colorLabel1.config(text=colorCode[1], bg=colorCode[1])
+            self.bckg=colorCode[0]
+
+    def pickColorFg(self):
+        
+        colorCode = colorchooser.askcolor(title="Choose a color")
+        # color_code is a tuple: ((R, G, B), "#rrggbb")
+        if colorCode[1]:  # if user didn’t cancel
+            
+            self.colorLabel2.config(text=colorCode[1], bg=colorCode[1])
+            self.fgC=colorCode[0]
+
     
     def onChange(self,value):
         self.toApply=value
@@ -83,11 +122,13 @@ class App:
 
     def applyFilter(self):
         if self.currentImage:
+            if self.fontSizeField.get()!="":
+                self.fontSize=int(self.fontSizeField.get())
             im=f.preprocess(self.currentImage,dwnSamp=int(self.dwnSampleField.get()))
             if self.toApply == "Basic Ascii":
-                out = f.applyBasic(im)
+                out = f.applyBasic(im,bg=self.bckg,fg=self.fgC,fontSz=self.fontSize)
             elif self.toApply=="Color Ascii":
-                out = f.basicColor(im)
+                out = f.basicColor(im,bg=self.bckg,fontSz=self.fontSize)
             self.currentImage=out
             self.displayPrev()
         return

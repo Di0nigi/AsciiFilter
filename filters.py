@@ -78,9 +78,9 @@ def toTextFile(fileName,charlist):
 
 ### FILTERS
 
-def applyBasic(img,bg,fg):
+def applyBasic(img,bg,fg,fontSz):
 
-    fontSz= 5
+    
     font = ImageFont.truetype("arial.ttf", fontSz)
 
     chars,cols = pixelTochar(img)
@@ -120,8 +120,7 @@ def applyBasic(img,bg,fg):
 
     return ret
 
-def basicColor(img,bg):
-    fontSz= 5
+def basicColor(img,bg,fontSz):
     font = ImageFont.truetype("arial.ttf", fontSz)
 
     chars,cols = pixelTochar(img)
