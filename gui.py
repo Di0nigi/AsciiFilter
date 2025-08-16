@@ -3,6 +3,7 @@ import numpy as np
 from tkinter import filedialog, colorchooser
 from PIL import Image, ImageTk
 from scipy.ndimage import zoom
+import cv2
 
 import filters as f
 
@@ -10,7 +11,17 @@ class App:
 
     def __init__(self,r):
 
-        self.filters = ["Basic Ascii", "Color Ascii"]
+        self.alphaVal=1
+        self.betaVal=0
+        self.gammaVal=0.0
+
+        self.lastG=0.0
+        self.lastA=1.0
+
+        
+
+
+        self.filters = ["None","Basic Ascii", "Color Ascii"]
         self.bckg=(0,0,0)
         self.fgC=(255,255,255)
         self.fontSize=5
@@ -89,6 +100,29 @@ class App:
         self.fileBt=tk.Button(self.sideSetting, text="Save", command=self.saveFile,width=28)
         self.fileBt.place(x=0,y=350)
 
+        self.contrastLabel = tk.Label(text="Contrast", font=("TkDefaultFont",10),width=25,anchor="w")
+        self.contrastLabel.place(x=0,y=380)
+        self.sliderContrast = tk.Scale(self.sideSetting, from_=0,to=2,resolution=0.00001, orient='horizontal',command=self.updateContrast)
+        self.sliderContrast.set(1)
+        self.sliderContrast.place(x=0,y=400)
+
+
+        self.expLabel = tk.Label(text="Exposure", font=("TkDefaultFont",10),width=25,anchor="w")
+        self.expLabel.place(x=0,y=440)
+
+        self.sliderExp = tk.Scale(self.sideSetting, from_=-4, to=4,resolution=0.001, orient='horizontal',command=self.updateExp)
+        self.sliderExp.place(x=0,y=490)
+
+        return
+    def updateExp(self,val):
+        #self.gammaVal = float(val)
+        
+        gamma = 2.0 ** (float(val))
+        self.gammaVal = 1.0 / gamma
+        return
+    def updateContrast(self,val):
+        
+        self.alphaVal = float(val)
         return
     
     def pickColorBkg(self):
@@ -122,12 +156,32 @@ class App:
 
     def applyFilter(self):
         if self.currentImage:
+            self.currentImage=np.array(self.currentImage)
+
+            if self.gammaVal!=self.lastG:
+                
+                self.lastG=self.gammaVal
+                table = np.array([((i / 255.0) ** self.gammaVal) * 255 for i in range(256)]).astype("uint8")
+                self.currentImage = cv2.LUT(self.currentImage, table)
+                print(self.gammaVal)
+                print(self.lastG)
+
+            if self.alphaVal!=self.lastA:
+                self.lastA=self.alphaVal
+                self.currentImage = cv2.convertScaleAbs(self.currentImage, alpha=self.alphaVal, beta=0)
+
+
             if self.fontSizeField.get()!="":
                 self.fontSize=int(self.fontSizeField.get())
-            im=f.preprocess(self.currentImage,dwnSamp=int(self.dwnSampleField.get()))
-            if self.toApply == "Basic Ascii":
+            self.currentImage=Image.fromarray(self.currentImage)
+            
+            if self.toApply == "None":
+                out=self.currentImage
+            elif self.toApply == "Basic Ascii":
+                im=f.preprocess(self.currentImage,dwnSamp=int(self.dwnSampleField.get()))
                 out = f.applyBasic(im,bg=self.bckg,fg=self.fgC,fontSz=self.fontSize)
             elif self.toApply=="Color Ascii":
+                im=f.preprocess(self.currentImage,dwnSamp=int(self.dwnSampleField.get()))
                 out = f.basicColor(im,bg=self.bckg,fontSz=self.fontSize)
             self.currentImage=out
             self.displayPrev()
