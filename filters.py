@@ -147,6 +147,20 @@ def basicColor(img,bg,fontSz):
     ret = Image.fromarray(ret)
     return ret
 
+def clarityEffect(img, strength=0.5):
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+    blur = cv2.GaussianBlur(l, (0, 0), sigmaX=3, sigmaY=3)
+    details = cv2.subtract(l, blur)
+    if strength >= 0:
+        lNew = cv2.addWeighted(l, 1.0, details, strength, 0)
+    else:
+        lNew = cv2.addWeighted(l, 1.0, details, strength, 0)
+    lNew = np.clip(lNew, 0, 255).astype(np.uint8)
+    labNew = cv2.merge([lNew, a, b])
+    result = cv2.cvtColor(labNew, cv2.COLOR_LAB2BGR)
+    return result
+
 def preprocess(img,dwnSamp):
 
     width, height = img.size

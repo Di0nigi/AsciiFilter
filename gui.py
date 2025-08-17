@@ -15,6 +15,10 @@ class App:
         self.betaVal=0
         self.gammaVal=0.0
 
+        self.clarityVal=0.0
+        self.lastClarity=0.0
+
+
         self.lastG=0.0
         self.lastA=1.0
 
@@ -113,7 +117,19 @@ class App:
         self.sliderExp = tk.Scale(self.sideSetting, from_=-4, to=4,resolution=0.001, orient='horizontal',command=self.updateExp)
         self.sliderExp.place(x=0,y=490)
 
+        self.expLabel = tk.Label(text="Clarity", font=("TkDefaultFont",10),width=25,anchor="w")
+        self.expLabel.place(x=0,y=550)
+
+        self.sliderExp = tk.Scale(self.sideSetting, from_=-5, to=5,resolution=0.01, orient='horizontal',command=self.updateClarity)
+        self.sliderExp.place(x=0,y=580)
+
         return
+    
+    def updateClarity(self,val):
+        self.clarityVal=float(val)
+        
+        return
+
     def updateExp(self,val):
         #self.gammaVal = float(val)
         
@@ -169,6 +185,11 @@ class App:
             if self.alphaVal!=self.lastA:
                 self.lastA=self.alphaVal
                 self.currentImage = cv2.convertScaleAbs(self.currentImage, alpha=self.alphaVal, beta=0)
+
+            if self.clarityVal!=self.lastClarity:
+                self.lastClarity=self.clarityVal
+                self.currentImage = f.clarityEffect(self.currentImage,self.clarityVal)
+
 
 
             if self.fontSizeField.get()!="":
